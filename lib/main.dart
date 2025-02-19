@@ -46,6 +46,25 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
       happinessLevel = (happinessLevel - 20).clamp(0, 100);
     }
   }
+  // determine the color based on happiness level
+  MaterialColor _determineColor() {
+    if (happinessLevel < 30) {
+      return Colors.red;
+    } else if (happinessLevel > 70) {
+      return Colors.green;
+    } else {
+      return Colors.yellow;
+    }
+  }
+  String _petMood() {
+    if (happinessLevel < 30) {
+      return "😡";
+    } else if (happinessLevel > 70) {
+      return "🙂";
+    } else {
+      return "😐";
+    } 
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +78,8 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
           children: <Widget>[
             Text(
               'Name: $petName',
-              style: TextStyle(fontSize: 20.0),
+              style: TextStyle(fontSize: 20.0,
+              color: _determineColor()),
             ),
             SizedBox(height: 16.0),
             Text(
@@ -67,6 +87,10 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
               style: TextStyle(fontSize: 20.0),
             ),
             SizedBox(height: 16.0),
+            Text(
+              'Mood: ${_petMood()}',
+              style: TextStyle(fontSize: 30.0),
+            ),
             Text(
               'Hunger Level: $hungerLevel',
               style: TextStyle(fontSize: 20.0),
