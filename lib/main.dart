@@ -17,6 +17,7 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
   String petName = "Your Pet";
   int happinessLevel = 50;
   int hungerLevel = 50;
+  int energyLevel = 50; // New energy state variable
 
   // Controller for name input
   TextEditingController _nameController = TextEditingController();
@@ -29,16 +30,22 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
   String? _gameOverMessage;
   DateTime? _winStartTime;
 
+  // Activity selection variables
+  final List<String> _activities = ['Sleep', 'Exercise', 'Play', 'Eat'];
+  String? _selectedActivity;
+
   @override
   void initState() {
     super.initState();
-    // Start a timer that ticks every 30 seconds for hunger increase.
+    // Start a timer that ticks every 5 seconds for hunger increase (for testing purposes)
     _hungerTimer = Timer.periodic(Duration(seconds: 5), (timer) {
       setState(() {
         _updateHunger();
         _checkGameConditions();
       });
     });
+    // Set default selected activity
+    _selectedActivity = _activities.first;
   }
 
   @override
@@ -78,7 +85,8 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
       happinessLevel = (happinessLevel - 20).clamp(0, 100);
     }
   }
-  // determine the color based on happiness level
+
+  // Determine the text color based on happiness level
   MaterialColor _determineColor() {
     if (happinessLevel < 30) {
       return Colors.red;
@@ -88,7 +96,8 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
       return Colors.yellow;
     }
   }
-  // string function for mood emoji
+
+  // Return an emoji representing pet mood
   String _petMood() {
     if (happinessLevel < 30) {
       return "😡";
@@ -126,6 +135,21 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
     }
   }
 
+  // Function to perform an activity and update energy level based on the selection
+  void _performActivity() {
+    setState(() {
+      if (_selectedActivity == 'Sleep') {
+        energyLevel = (energyLevel + 20).clamp(0, 100);
+      } else if (_selectedActivity == 'Exercise') {
+        energyLevel = (energyLevel - 20).clamp(0, 100);
+      } else if (_selectedActivity == 'Play') {
+        energyLevel = (energyLevel - 10).clamp(0, 100);
+      } else if (_selectedActivity == 'Eat') {
+        energyLevel = (energyLevel + 10).clamp(0, 100);
+      }
+    });
+  }
+
   // UI for entering pet name
   Widget _buildNameInputUI() {
     return Center(
@@ -158,13 +182,13 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
   Widget _buildGameUI() {
     return Center(
       child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
               'Name: $petName',
-              style: TextStyle(fontSize: 20.0,
-              color: _determineColor()),
+              style: TextStyle(fontSize: 20.0, color: _determineColor()),
             ),
             SizedBox(height: 16.0),
             Text(
@@ -176,9 +200,28 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
               'Mood: ${_petMood()}',
               style: TextStyle(fontSize: 30.0),
             ),
+            SizedBox(height: 16.0),
             Text(
               'Hunger Level: $hungerLevel',
               style: TextStyle(fontSize: 20.0),
+            ),
+            SizedBox(height: 16.0),
+            // Energy bar widget
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Energy Level: $energyLevel',
+                  style: TextStyle(fontSize: 20.0),
+                ),
+                SizedBox(height: 8.0),
+                LinearProgressIndicator(
+                  value: energyLevel / 100,
+                  minHeight: 10.0,
+                  backgroundColor: Colors.grey[300],
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                ),
+              ],
             ),
             SizedBox(height: 32.0),
             ElevatedButton(
@@ -189,6 +232,37 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
             ElevatedButton(
               onPressed: _feedPet,
               child: Text('Feed Your Pet'),
+            ),
+            SizedBox(height: 32.0),
+            // Activity Selection UI
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Select Activity:',
+                  style: TextStyle(fontSize: 16.0),
+                ),
+                SizedBox(width: 16.0),
+                DropdownButton<String>(
+                  value: _selectedActivity,
+                  items: _activities.map((activity) {
+                    return DropdownMenuItem<String>(
+                      value: activity,
+                      child: Text(activity),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedActivity = value;
+                    });
+                  },
+                ),
+              ],
+            ),
+            SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: _performActivity,
+              child: Text('Confirm Activity'),
             ),
             if (_gameOverMessage != null) ...[
               SizedBox(height: 32.0),
